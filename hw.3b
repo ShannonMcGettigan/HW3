@@ -1,0 +1,25 @@
+#also used pycharm and copied ad pasted into this. I couldnt find out how to run the code.
+import math
+
+m = float(input("enter the value of m: "))
+z = float(input("enter the value of z: "))
+
+Z_table = float(input("enter the value of z from the table: "))
+
+
+
+#finding Km and Fz
+top = math.gamma((m + 1) / 2)
+bottom = math.sqrt(m * math.pi) * math.gamma(m / 2)
+Km = top / bottom
+Fz = Km/ (1 + (z**2 / m))**((m +1) / 2)
+
+
+#this is the results of the right hand side
+print("\nResults:")
+print("Km =", Km)
+print("F(z) =", Fz)
+
+#comparing the two different values
+error_top = abs(Fz - Z_table)
+error = (error_top / Z_table) * 100
