@@ -1,0 +1,160 @@
+import numpy as np
+
+##check the matric to see if its symmetric and positive
+def symmetric(A):
+  return np.allclose(A, A.T)
+def positive_def(A):
+  try:
+    np.linalg.cholesky(A)
+      return True
+  except np.linalg.LinAlgError:
+    return False
+
+def cholesky(A):
+n = len(A)
+L = np.zero((n ,n))
+
+for j in range(1, n):
+  L[j, 0] = A[j, 0] / L[0, 0]
+
+for j in range(1, n):
+sun_sq = 0
+for s in range(j):
+  sum_sq += L[j, s] ** 2
+l[j, j] = np.sqrt(A[j, j] - sum_sq)
+
+for p in range(j + 1,n)
+  sum_prod = 0
+  for s in range(j):
+    sum_prod += l[j, s] * L[p, s]
+  L[p, j] = (A[p, j] - sum_prod) / L[j, j]
+  
+return L  
+
+
+###doolittle LU factorization at A = L at U
+def doo_little(A):
+  n = len (A)
+  L = np.eye(n)
+  U = np.zero((n, n))
+
+for k in range(n):
+  for j in range(k + 1, n):
+    U[k, j] = A[k, j] - sum(L[k, s] * U[s, j] for s in range(k))
+  
+  for i in range(k + 1,n):
+      L[i, k] = (A[i, k] - sum(L[i, s] * U[s, k] for s in range(k))) / U[k, k]
+return L, U
+
+
+##solving L at y=b
+def forward_sub(L, b):
+  n = len(U)
+  y = np.zero(n)
+  for i in range(n):
+    y[i] = (b[i] - sum(L[i, j] * y[j] for j in range(i))) / L[i, i]
+  return y
+
+## solving U at x = y
+def backward_sub(U, y):
+  n = len(U)
+  x = np.zero(n)
+  for i in range(n -1, -1, -1):
+    x[i] = (y[i] - sum(U[i, j] * x[j] for j in range(i + 1, n))) / U[i, i]
+  return x
+
+
+##solving usning the Cholesky method
+def solve_cholesky(A, b):
+  print("Using Cholesky method (matrix is symmetric positive definite)")
+
+  L = cholesky(A)
+  print(f"\nCholesky factor L:\n{L}")
+  print(f"\nCheck: L @ L.T:\n{L @ L.T}")
+  y = forward_sub(L, b)
+  x = backward_sub(L.T, y)
+
+  return x
+
+def solve_doolittle(A, b):
+  print("Using Doolittle method (matrix is not symmetric positive definite)")
+  L, U = doo_little(A)
+  print(f"\nL factor:\n{L}")
+  print(f"\nU factor:\n{U}")
+  print(f"\nCheck: L @ U:\n{L @ U}")
+  y = forward_sub(L, b)
+  x = backward_sub(U, y)
+
+  return x
+
+def solve_linear_system(A, b):
+  print("\n" + "="*50)
+  print("Checking matrix properties...")
+  print("="*50)
+
+  if A.shape[0] != A.shape[1]:
+    raise ValueError("Matrix must be square")
+  sym = symmetric(A)
+  print(f"Matrix is symmetric: {sym}")
+
+  if sym:
+    pd = positive_def(A)
+    print(f"Matrix is positive definite: {pd}")
+    if pd:
+      return solve_cholesky(A, b)
+
+    return solve_doolittle(A, b)
+    
+###prob 1
+print("\n" + "="*60)
+print("PROBLEM 1")
+print("="*60)
+
+
+A1 = np.array([
+    [1, -1, 3, 2],
+    [-1, 5, -5, -2],
+    [3, -5, 19, 3],
+    [2, -2, 3, 21]
+], dtype=float)
+
+b1 = np.array([15, -35, 94, 1], dtype=float)
+x1 = solve_linear_system(A1, b1)
+
+print(f"\nSolution vector x:")
+for i, val in enumerate(x1, 1):
+  print(f"x{i} = {val:.6f}")
+
+print(f"\nVerification - A @ x should equal b:")
+print(f"A @ x = {A1 @ x1}")
+print(f"b     = {b1}")
+print(f"Residual = {np.linalg.norm(A1 @ x1 - b1):.2e}")
+
+###prob 2
+print("\n" + "="*60)
+print("PROBLEM 2")
+print("="*60)
+
+A2 = np.array([
+    [4, 2, 4, 0],
+    [2, 2, 3, 2],
+    [4, 3, 6, 3],
+    [0, 2, 3, 9]
+], dtype=float)
+
+b2 = np.array([20, 36, 60, 122], dtype=float)
+x2 = solve_linear_system(A2, b2)
+
+print(f"\nSolution vector x:")
+for i, val in enumerate(x2, 1):
+    print(f"x{i} = {val:.6f}")
+
+print(f"\nVerification - A @ x should equal b:")
+print(f"A @ x = {A2 @ x2}")
+print(f"b     = {b2}")
+print(f"Residual = {np.linalg.norm(A2 @ x2 - b2):.2e}")
+
+
+
+
+    
