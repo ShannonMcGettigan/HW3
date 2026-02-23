@@ -1,0 +1,66 @@
+#used pycharm the copied and pasted it into here
+from math import sqrt, pi, exp
+from NumericalMethods import GPDF, Simpson, Probability
+
+
+def probability(GPDF, param, lower, upper):
+    pass
+
+
+def main():
+    mu = float(input("Enter the mean (mu): "))
+    sigma = float(input("Enter the standard deviation (sigma): "))
+
+    print("\nAre you:")
+    print("1 - Given c and want Probability")
+    print("2 - Given Probability and want c")
+
+    choice = input("Enter 1 or 2: ")
+
+    if choice == "1":
+         c = float(input("Enter the c: "))
+
+
+         print("\nSelect probability type:")
+         print("1 - P(mu-cσ < x < mu+cσ)")
+         print("2 - P(x > mu+cσ)")
+         print("3 - P(x < mu-cσ)")
+         print("4 - P(x < c)")
+         print("5 - P(x > c)")
+
+         ptype = input("Enter your choice: ")
+         if ptype == "1":
+             lower = mu - c * sigma
+             upper = mu + c * sigma
+             p = Probability(GPDF, (mu, sigma), lower, upper)
+             print(f"Probability = {p:.6f}")
+         elif ptype == "2":
+             lower = mu - c * sigma
+             p = Probability(GPDF, (mu, sigma), lower, GT=True)
+             print(f"Probability = {p:.6f}")
+         elif ptype == "3":
+             upper = mu - c * sigma
+             p = Probability(GPDF, (mu, sigma), upper)
+             print(f"Probability = {p:.6f}")
+         elif ptype == "4":
+             p = Probability(GPDF, (mu, sigma), c)
+             print(f"Probability = {p:.6f}")
+         elif ptype == "5":
+             p = Probability(GPDF, (mu, sigma), c, GT=True)
+             print(f"Probability = {p:.6f}")
+    elif choice == "2":
+        target_p = float(input("Enter the target probability: "))
+
+        print("\nSelect probability type:")
+        print("1 - P(mu-cσ < x < mu+cσ)")
+        print("2 -P(x > mu+cσ)")
+        print("3 - P(x < mu-cσ)")
+
+        ptype = input("Enter your choice: ")
+
+        c = Probability(GPDF, (mu, sigma), target_p, Findc=True, Type=ptype)
+
+        print(f"Probability = {c:.6f}")
+
+if __name__ == "__main__":
+    main()
