@@ -1,66 +1,155 @@
-#used pycharm the copied and pasted it into here
-from math import sqrt, pi, exp
-from NumericalMethods import GPDF, Simpson, Probability
+#used pycharm the copied and pasted it into here, i also got help from chatgpt and friends
+import math
+
+def normal_pdf(x, mu, sigma):
+    """
+        Computes the value of the normal probability density function at x.
+        Parameters:
+        x: the point at which to evaluate
+        mu: mean of the distribution
+        sigma: standard deviation of the distribution
+        Returns:
+        Value at x (float)
+        """
+    return (1 / (sigma * math.sqrt(2 * math.pi))) * math.exp(-0.5 * ((x - mu) / sigma) ** 2)
 
 
-def probability(GPDF, param, lower, upper):
-    pass
+def simpsons_rule(f, a, b, n, mu, sigma):
+    """
+    Integrates the function from a to b using Simpson's 1/3 rule.
+
+    Parameters:
+    f: the function to integrate
+    a: lower limit
+    b: upper limit
+    n: number of intervals (must be even)
+    mu, sigma: extra parameters
+
+    Returns:
+    integral of f from a to b (float)
+    """
+    if n % 2 != 0:
+        n += 1  # mkae even
+    h = (b - a) / n
+    total = f(a, mu, sigma) + f(b, mu, sigma)
+
+    for i in range(1, n):
+        x = a + i * h
+        if i % 2 == 0:
+            total += 2 * f(x, mu, sigma)
+        else:
+            total += 4 * f(x, mu, sigma)
+    return total * h / 3
+
+
+def probability_c(mu, sigma, c, side='double'):
+    """
+    Calculates the probability for a given c and distribution.
+
+    Parameters:
+    mu: mean (float)
+    sigma: standard deviation (float)
+    c: half-width for double-side (float)
+    side: 'double', 'single_less', 'single_greater', 'outside'
+
+    Returns:
+    probability corresponding to c (float)
+    """
+    n = 100  # number of intervals for Simpson's rule
+
+    if side == 'double':
+        a = mu - (c - mu)
+        b = mu + (c - mu)
+        return simpsons_rule(normal_pdf, a, b, n, mu, sigma)
+    elif side == 'single_less':
+        a = mu - 5 * sigma
+        b = c
+        return simpsons_rule(normal_pdf, a, b, n, mu, sigma)
+    elif side == 'single_greater':
+        a = c
+        b = mu + 5 * sigma
+        return simpsons_rule(normal_pdf, a, b, n, mu, sigma)
+    elif side == 'outside':  # probability outside μ-(c-μ) to μ+(c-μ)
+        a = mu - 5 * sigma
+        b = mu - (c - mu)
+        prob_lower = simpsons_rule(normal_pdf, a, b, n, mu, sigma)
+        a2 = mu + (c - mu)
+        b2 = mu + 5 * sigma
+        prob_upper = simpsons_rule(normal_pdf, a2, b2, n, mu, sigma)
+        return prob_lower + prob_upper
+    else:
+        return None
+
+
+def secant_method(func, target, x0, x1, tol=1e-4, maxiter=50):
+    """
+    Secant method to find a root of func(x) - target = 0
+
+    Parameters:
+    func: function of x
+    target: goal value (float)
+    x0, x1: initial guesses (float)
+    tol: tolerance (float)
+    maxiter: maximum iterations
+
+    Returns:
+    approximate solution of x (float)
+    """
+    f_x0 = func(x0) - target
+    f_x1 = func(x1) - target
+
+    for i in range(maxiter):
+        if f_x1 - f_x0 == 0:
+            print("Division by zero in Secant method")
+            return None
+        x2 = x1 - f_x1 * (x1 - x0) / (f_x1 - f_x0)
+        if abs(x2 - x1) < tol:
+            return x2
+        x0, x1 = x1, x2
+        f_x0, f_x1 = f_x1, func(x1) - target
+    print("Secant method did not converge")
+    return None
 
 
 def main():
-    mu = float(input("Enter the mean (mu): "))
-    sigma = float(input("Enter the standard deviation (sigma): "))
+    print("Normal distribution probability calculator")
 
-    print("\nAre you:")
-    print("1 - Given c and want Probability")
-    print("2 - Given Probability and want c")
+    # User input
+    mu = float(input("Enter mean (mu): "))
+    sigma = float(input("Enter standard deviation (sigma): "))
 
-    choice = input("Enter 1 or 2: ")
+    choice = input("Do you know 'c' and want 'P', or know 'P' and want 'c'? Enter 'c' or 'P': ").strip().lower()
 
-    if choice == "1":
-         c = float(input("Enter the c: "))
+    if choice == 'c':
+        c = float(input("Enter value of c: "))
+        side_choice = input(
+            "Choose probability type: 'double', 'single_less', 'single_greater', 'outside': ").strip().lower()
+        prob = probability_c(mu, sigma, c, side_choice)
+        print(f"The probability is approximately: {prob:.6f}")
 
+    elif choice == 'p':
+        target_prob = float(input("Enter desired probability (0 to 1): "))
+        side_choice = input(
+            "Choose probability type: 'double', 'single_less', 'single_greater', 'outside': ").strip().lower()
 
-         print("\nSelect probability type:")
-         print("1 - P(mu-cσ < x < mu+cσ)")
-         print("2 - P(x > mu+cσ)")
-         print("3 - P(x < mu-cσ)")
-         print("4 - P(x < c)")
-         print("5 - P(x > c)")
+        # Define a lambda function for Secant
+        def f(c):
+            return probability_c(mu, sigma, c, side_choice)
 
-         ptype = input("Enter your choice: ")
-         if ptype == "1":
-             lower = mu - c * sigma
-             upper = mu + c * sigma
-             p = Probability(GPDF, (mu, sigma), lower, upper)
-             print(f"Probability = {p:.6f}")
-         elif ptype == "2":
-             lower = mu - c * sigma
-             p = Probability(GPDF, (mu, sigma), lower, GT=True)
-             print(f"Probability = {p:.6f}")
-         elif ptype == "3":
-             upper = mu - c * sigma
-             p = Probability(GPDF, (mu, sigma), upper)
-             print(f"Probability = {p:.6f}")
-         elif ptype == "4":
-             p = Probability(GPDF, (mu, sigma), c)
-             print(f"Probability = {p:.6f}")
-         elif ptype == "5":
-             p = Probability(GPDF, (mu, sigma), c, GT=True)
-             print(f"Probability = {p:.6f}")
-    elif choice == "2":
-        target_p = float(input("Enter the target probability: "))
+        # Initial guesses for c
+        x0 = mu - sigma
+        x1 = mu + sigma
 
-        print("\nSelect probability type:")
-        print("1 - P(mu-cσ < x < mu+cσ)")
-        print("2 -P(x > mu+cσ)")
-        print("3 - P(x < mu-cσ)")
+        c_sol = secant_method(f, target_prob, x0, x1)
+        if c_sol is not None:
+            print(f"The value of c for probability {target_prob} is approximately: {c_sol:.6f}")
+        else:
+            print("Could not find a solution for c.")
 
-        ptype = input("Enter your choice: ")
+    else:
+        print("Invalid choice. Please enter 'c' or 'P'.")
 
-        c = Probability(GPDF, (mu, sigma), target_p, Findc=True, Type=ptype)
-
-        print(f"Probability = {c:.6f}")
 
 if __name__ == "__main__":
+    main()
     main()
