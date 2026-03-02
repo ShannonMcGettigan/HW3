@@ -1,0 +1,54 @@
+'''
+made all of the homework on pycharm and copied and pasted it here
+ i also had help using chatGPT
+ '''
+from scipy.optimize import fsolve
+import matplotlib.pyplot as plt
+import numpy as np
+from copy import deepcopy
+# endregion
+
+# region functions
+def circle_parabola(vals, x1=1, y1=0, radius=4, a=0.5, b=1.0):
+    x, y = vals
+    f1 = (x - x1)**2 + (y - y1)**2 - radius**2
+    f2 = a*x**2 + b - y
+    return (f1, f2)
+
+def main():
+    # Prompt user for circle parameters (with defaults)
+    x1 = float(input("Circle center x1 (default 1): ") or 1)
+    y1 = float(input("Circle center y1 (default 0): ") or 0)
+    radius = float(input("Circle radius (default 4): ") or 4)
+
+    # Prompt user for parabola parameters (with defaults)
+    width = float(input("Parabola width (default 0.5): ") or 0.5)
+    offset = float(input("Parabola offset (default 1.0): ") or 1.0)
+
+    # Now variables are defined, we can call fsolve
+    x, y = fsolve(
+        lambda vals: circle_parabola(vals, x1, y1, radius, width, offset),
+        (1, 0)
+    )
+    print("Intersection point (x, y):", x, y)
+
+    # Plotting
+    xvals = np.linspace(-10, 10, 400)
+    y_circle_upper = y1 + np.sqrt(np.maximum(0, radius**2 - (xvals - x1)**2))
+    y_circle_lower = y1 - np.sqrt(np.maximum(0, radius**2 - (xvals - x1)**2))
+    y_parabola = width * xvals**2 + offset
+
+    plt.plot(xvals, y_circle_upper, label="Circle")
+    plt.plot(xvals, y_circle_lower, label="Circle")
+    plt.plot(xvals, y_parabola, label="Parabola")
+    plt.scatter(x, y, color='red', zorder=5, label="Intersection")
+    plt.xlabel("x")
+    plt.ylabel("y")
+    plt.xlim(-10, 10)
+    plt.ylim(-10, 10)
+    plt.grid(True)
+    plt.legend()
+    plt.show()
+
+if __name__ == "__main__":
+    main()
